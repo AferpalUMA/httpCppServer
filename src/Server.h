@@ -1,6 +1,8 @@
 #pragma once
 #include<sys/socket.h>
 #include<netinet/in.h>
+#include<iostream>
+#include<unistd.h>
 #include"Utilities.h"
 namespace http{
 	class Server{
@@ -12,7 +14,9 @@ namespace http{
 			struct sockaddr_in sockaddr;
 		public:
 			Server();
-			void listen(int);
+			void listenAt(int);
+			void formatRequest(int);
+			~Server();
 	};
 
 

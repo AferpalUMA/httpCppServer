@@ -1,9 +1,7 @@
-#include"Utilities.h"
-#include<iostream>
-
+#include"Server.h"
 
 int main(){
-	int p=8080;
-	std::cout<<toHex(p)<<'\n';
+	http::Server server;
+	server.listenAt(8080);
 	return 0;
 }
