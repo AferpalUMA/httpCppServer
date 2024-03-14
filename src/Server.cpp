@@ -18,8 +18,11 @@ void Server::listenAt(int _port){
 	}
 	if(listen(this->socket_fd, 20)<0){throw "Listen error\n";}
 	std::cout<<"Succesfully listening at port "<<_port<<'\n';
-	this->current_request=accept(this->socket_fd, NULL, NULL);
-	handleRequest(this->current_request);
+	for(int i=0; i<5; i++){
+		this->current_request=accept(this->socket_fd, NULL, NULL);
+		handleRequest(this->current_request);
+	}
+	
 }
 
 Request* Server::formatRequest(int req){
@@ -30,8 +33,8 @@ Request* Server::formatRequest(int req){
 void Server::handleRequest(int req){
 	Request* request=formatRequest(req);
 	int statusCode=0;
-	char* response_body= new char[1024];
-	char * filePath=new char[128];
+	char* response_body= new char[1024]{};
+	char * filePath=new char[128]{};
 	strconcat(filePath, "../");
 	strconcat(filePath, request->getRoot());
 	std::ifstream requestedFile{filePath};
@@ -43,7 +46,7 @@ void Server::handleRequest(int req){
 		statusCode=200;
 		while(requestedFile.get(*(response_body++))){}
 	}
-	Response response={statusCode, contentHead};
+	Response response={statusCode, contentHead, request->getFileType()};
 	//const char* res="HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 55\nConnection: Closed\n\n<html>\n<body>\n<h1>Hello, World!</h1>\n</body>\n</html>\r\n\r\n";
 	const char* msg= response.getMessage();
 	int bSent=send(req, msg, length(msg), 0);
