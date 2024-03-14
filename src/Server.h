@@ -3,7 +3,9 @@
 #include<netinet/in.h>
 #include<iostream>
 #include<unistd.h>
-#include"Utilities.h"
+#include"Request.h"
+#include"Response.h"
+#include<fstream>
 namespace http{
 	class Server{
 		private:
@@ -15,7 +17,8 @@ namespace http{
 		public:
 			Server();
 			void listenAt(int);
-			void formatRequest(int);
+			Request* formatRequest(int);
+			void handleRequest(int);
 			~Server();
 	};
 
