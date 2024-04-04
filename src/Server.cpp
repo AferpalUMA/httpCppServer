@@ -22,7 +22,6 @@ void Server::listenAt(int _port){
 		this->current_request=accept(this->socket_fd, NULL, NULL);
 		handleRequest(this->current_request);
 	}
-	
 }
 
 Request* Server::formatRequest(int req){
@@ -47,10 +46,10 @@ void Server::handleRequest(int req){
 		while(requestedFile.get(*(response_body++))){}
 	}
 	Response response={statusCode, contentHead, request->getFileType()};
-	//const char* res="HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: 55\nConnection: Closed\n\n<html>\n<body>\n<h1>Hello, World!</h1>\n</body>\n</html>\r\n\r\n";
 	const char* msg= response.getMessage();
 	int bSent=send(req, msg, length(msg), 0);
 	delete request;
+	delete[]contentHead;
 }
 
 Server::~Server(){

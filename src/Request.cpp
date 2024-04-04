@@ -11,7 +11,7 @@ Request::Request(const char* req){
 		req++;
 	}
 	this->method=getMethodFromString(method);
-	char* rt=new char[128];
+	char* rt=new char[128]{};
 	char* rt2=rt;
 	i=0;
 	req++;
@@ -22,16 +22,16 @@ Request::Request(const char* req){
 	strcpy(this->root, rt);
 	while (*rt!='.'){rt++;}
 	rt++;
-	this->fileType=new char[length(rt)];
+	this->fileType=new char[length(rt)+1]{};
 	strcpy(this->fileType, rt);
 	delete[] rt2;
 }
 
 Request::Request(const Request& req){
 	this->method=req.method;
-	this->root=new char[length(req.root)];
+	this->root=new char[length(req.root)]{};
 	strcpy(this->root, req.root);
-	this->fileType= new char[length(req.fileType)];
+	this->fileType= new char[length(req.fileType)]{};
 	strcpy(this->fileType, req.fileType);
 }
 Request::Request(Request&& req){
@@ -45,7 +45,7 @@ Request::Request(Request&& req){
 void Request::operator=(const Request& req){
 	this->method=req.method;
 	delete[] this->root;
-	this->root=new char[length(req.root)];
+	this->root=new char[length(req.root)]{};
 	strcpy(this->root, req.root);
 	delete[] this->fileType;
 	strcpy(this->fileType, req.fileType);
