@@ -18,10 +18,12 @@ void Server::listenAt(int _port){
 	}
 	if(listen(this->socket_fd, 20)<0){throw "Listen error\n";}
 	std::cout<<"Succesfully listening at port "<<_port<<'\n';
-	for(int i=0; i<5; i++){
+	for(int i=0; i<4; i++){
 		this->current_request=accept(this->socket_fd, NULL, NULL);
 		handleRequest(this->current_request);
 	}
+		
+	
 }
 
 Request* Server::formatRequest(int req){
@@ -29,27 +31,26 @@ Request* Server::formatRequest(int req){
 	recv(req, buffer, 512,0);
 	return new Request(buffer);
 }
+
+void Server::get(String root, const std::function<void(Request* req, Response* res)>& f){
+	/*if(rootBehaviour.find(root)==rootBehaviour.end()){
+		rootBehaviour.insert(std::pair{root, f});
+	}else{
+		rootBehaviour[root]=f;
+	}*/
+	rootBehaviour[root]=f;
+	
+}
 void Server::handleRequest(int req){
 	Request* request=formatRequest(req);
-	int statusCode=0;
-	char* response_body= new char[1024]{};
-	char * filePath=new char[128]{};
-	strconcat(filePath, "../");
-	strconcat(filePath, request->getRoot());
-	std::ifstream requestedFile{filePath};
-	delete[]filePath;
-	char* contentHead=response_body;
-	if(!requestedFile){
-		statusCode=404;
-	}else{
-		statusCode=200;
-		while(requestedFile.get(*(response_body++))){}
-	}
-	Response response={statusCode, contentHead, request->getFileType()};
-	const char* msg= response.getMessage();
-	int bSent=send(req, msg, length(msg), 0);
+	Response* response=new Response();
+	if(rootBehaviour.find(request->getRoot())!=rootBehaviour.end()){
+		rootBehaviour.at(request->getRoot())(request, response);
+	}else{response->setStatus(404);}
+	String msg= response->getMessage();
+	int bSent=send(req, msg, msg.length(), 0);
 	delete request;
-	delete[]contentHead;
+	delete response;
 }
 
 Server::~Server(){

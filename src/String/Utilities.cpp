@@ -16,12 +16,16 @@ int toHex(int n){
 	}
 	return res;
 }
-int length(const char* str){
+int lengthOf(const char* str){
+	if(!str){return 0;}
 	int i=0;
 	while(*(str+i)!='\0'){i++;}
 	return i;
 }
 bool strcmp(const char* str1, const char* str2){
+	if(!str1 || !str2){
+		return false;
+	}
 	while(*str1!='\0' && *str2!='\0'){
 		if(*(str1++)!=*(str2++)){return false;}
 	}
@@ -29,11 +33,18 @@ bool strcmp(const char* str1, const char* str2){
 	return true;
 }
 void strcpy(char* dest, const char* origin){
+	if(!origin || !dest){
+		return;
+	}
+
 	while(*origin!='\0'){
 		*(dest++)=*(origin++);
 	}
 }
 void strconcat(char* dest, const char* origin){
+	if(!origin || !dest){
+		return;
+	}
 	while(*dest!='\0'){dest++;}
 	strcpy(dest, origin);
 }
@@ -46,4 +57,3 @@ void strreverse(char* str){
 		*(end--)=aux;
 	}
 }
-

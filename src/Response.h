@@ -1,17 +1,22 @@
 #pragma once
-#include "Utilities.h"
+#include<fstream>
+#include"String/String.h"
 class Response{
 	private:
 		int statusCode;
 		int contentLength;
-		char* contentType;
-		char* message;
-		char* body;
+		String contentType;
+		String message;
+		String body;
 	public:
-		Response(int sCode, const char* body, const char* _contentType);
+		Response();
+		Response(int sCode, const String& body, const String& contentType);
 		Response(const Response&);
 		Response(Response&&);
 		void generateMessage();
-		char* getMessage();
+		void send(const String&);
+		void sendFile(const String&, const String&);
+		void setStatus(int c){this->statusCode=c;}
+		String getMessage();
 		~Response();
 };

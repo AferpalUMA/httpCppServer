@@ -1,51 +1,51 @@
 #include "Response.h"
 
-Response::Response(int _statusCode, const char* body, const char* _contentType){
+Response::Response(){
+	this->statusCode=200;
+	this->contentLength=0;
+	this->body=String();
+	this->message=String();
+	this->contentType=String();
+}
+
+Response::Response(int _statusCode, const String& body, const String& contentType){
 	this->statusCode=_statusCode;
-	this->contentLength=length(body);
-	this->body= new char[this->contentLength]{};
-	this->message=nullptr;
-	strcpy(this->body, body);
-	this->contentType= new char[length(_contentType)]{};
-	strcpy(this->contentType, _contentType);
+	this->contentLength=body.length();
+	this->body= body;
+	this->message=String();
+	this->contentType=contentType;
 }
 
 Response::Response(const Response& otherResponse){
 	this->statusCode=otherResponse.statusCode;
 	this->contentLength=otherResponse.contentLength;
-	this->body= new char[this->contentLength]{};
-	strcpy(this->body, otherResponse.body);
-	this->message=new char[length(otherResponse.message)]{};
-	strcpy(this->message, otherResponse.message);
-	this->contentType= new char[length(otherResponse.contentType)]{};
-	strcpy(this->contentType, otherResponse.contentType);
+	this->body=otherResponse.body;
+	this->contentType=otherResponse.contentType;
+	this->message=otherResponse.message;
 }
 
 Response::Response(Response&& otherResponse){
 	this->statusCode=otherResponse.statusCode;
 	this->contentLength=otherResponse.contentLength;
 	this->body=otherResponse.body;
-	otherResponse.body=nullptr;
 	this->message=otherResponse.message;
-	otherResponse.message=nullptr;
 	this->contentType=otherResponse.contentType;
-	otherResponse.contentType=nullptr;
 }
 void Response::generateMessage(){
-	if(this->message!=nullptr){delete[] this->message;}
-	this->message=new char[this->contentLength+100]{};
-	strconcat(this->message, "HTTP/1.1 ");
+	this->message="HTTP/1.1 ";
 	char number[4]={(char)(((this->statusCode/100)%10)+'0'), (char)(((this->statusCode/10)%10)+'0'), (char)((this->statusCode%10)+'0'), '\0'};
-	strconcat(this->message, number);
+	this->message=this->message+number;
 	if(number[0]=='4'){
-		strconcat(this->message, " Not found\nContent-Type: text/");
-		strconcat(this->message, this->contentType);
-		strconcat(this->message, "\nContent-Length: 78\nConnection: Closed\n\n<html>\n<body>\n<h1 style=\"color: red\">Error, page not found</h1>\n</body>\n<html>\r\n\r\n");return;
+		this->message+=" Not found\nContent-Type: text/html\nContent-Length: 78\nConnection: Closed\n\n<html>\n<body>\n<h1 style=\"color: red\">Error, page not found</h1>\n</body>\n<html>\r\n\r\n";
+		return;
 	}else if(number[0]=='2'){
-		strconcat(this->message, " OK\nContent-Type: text/");
-		strconcat(this->message, this->contentType);
-		strconcat(this->message, "\nContent-Length: ");
+		this->message+=" OK\n";
+		if(contentType!=nullptr){
+			this->message+="Content-Type: ";
+			this->message+=this->contentType;
+		}
 	}
+	this->message+="\nContent-Length: ";
 	int l=this->contentLength;
 	char size[32]={0};
 	int i=0;
@@ -54,17 +54,43 @@ void Response::generateMessage(){
 		l/=10;
 	}
 	strreverse(size);
-	strconcat(this->message, size);
-	strconcat(this->message, "\nConnection: Closed\n\n");
-	strconcat(this->message, this->body);
-	strconcat(this->message, "\r\n\r\n");
+	this->message+=size;
+	this->message+="\nConnection: keep-alive\n\n";
+	if(this->body.length()!=0){
+		this->message+=this->body;;
+	}
+	this->message+="\r\n\r\n";
 }
-char* Response::getMessage(){
+
+void Response::send(const String& msg){
+	this->contentLength=msg.length();
+	this->contentType="plain/text";
+	this->body=msg;
+}
+
+void Response::sendFile(const String& filePath, const String& contentT){
+	String path="../";
+	path+=filePath;
+	std::ifstream requestedFile{path};
+	delete[]path;
+	if(!requestedFile){
+		this->statusCode=404;
+		return;
+	}
+	this->statusCode=200;
+	char* readData= new char[1024];
+	int i=0;
+	while(i<1024 && requestedFile.get(*(readData+(i++)))){}
+	this->body=readData;
+	this->contentLength=this->body.length();
+	this->contentType=contentT;
+}
+
+String Response::getMessage(){
 	generateMessage();
 	return this->message;
 }
 
 Response::~Response(){
-	if(this->body){delete[] this->body;}
-	if(this->message){delete[] this->message;}
+	
 }

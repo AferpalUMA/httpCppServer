@@ -5,7 +5,8 @@
 #include<unistd.h>
 #include"Request.h"
 #include"Response.h"
-#include<fstream>
+#include<map>
+#include<functional>
 namespace http{
 	class Server{
 		private:
@@ -14,13 +15,14 @@ namespace http{
 			int port;
 			int hexPort;
 			struct sockaddr_in sockaddr;
+			std::map<String, std::function<void(Request* req, Response* res)>>rootBehaviour;
 		public:
 			Server();
 			void listenAt(int);
 			Request* formatRequest(int);
+			Response* formatResponse(char*);
 			void handleRequest(int);
+			void get(String str, const std::function<void(Request* req, Response* res)>& f);
 			~Server();
 	};
-
-
 }
